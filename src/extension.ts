@@ -1,26 +1,45 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	let disposable = vscode.commands.registerCommand('desmos-calculator-window.create-desmos-window', () => {
+		let panel = vscode.window.createWebviewPanel(
+			'graphView',
+			'Node Graph Panel',
+			vscode.ViewColumn.One,
+			{enableScripts: true}
+		);
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "desmos-calculator-window" is now active!');
-
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('desmos-calculator-window.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from Desmos-Calculator-Window!');
+		panel.webview.html = `
+			<!DOCTYPE html>
+			<html lang="en">
+			<head>
+				<style>
+					#cont {
+						width: 100%; /* Make the container div take up the full width of the parent element */
+						height: 100vh; /* Make the container div take up the full height of the viewport */
+					}
+					#calculator {
+						width: 100%; /* Make the calculator div take up the full width of the container */
+						height: 100%; /* Make the calculator div take up the full height of the container */
+					}
+				</style>
+			</head>
+			<body>
+				<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+				<div id="cont">
+					<div id="calculator"></div>
+				</div>
+				<script>
+					var elt = document.getElementById('calculator');
+					var calculator = Desmos.GraphingCalculator(elt);
+				</script>
+			</body>
+			</html>
+		`;
+		// panel.onDidDispose(() => ...);
 	});
 
 	context.subscriptions.push(disposable);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}

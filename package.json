@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "desmos-calculator-window.helloWorld",
-        "title": "Hello World"
+        "command": "desmos-calculator-window.create-desmos-window",
+        "title": "Create Desmos Window"
       }
     ]
   },
