@@ -42,5 +42,6 @@
   },
   "repository": {
     "url": "https://github.com/yosefgoren/Desmos-Calculator-Window.git"
-  }
+  },
+  "publisher": "octopus-writer"
 }
