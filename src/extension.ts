@@ -36,8 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
 				<div id="calculator" style="position: absolute; top: 46px; bottom: 0; left: 0; right: 0;"></div>
 				<script>            
 					window.Calc = Desmos.GraphingCalculator(document.querySelector('#calculator'));
-					window.Calc.settingsMenu.reverseContrast = true;
-					
+
 					function loadDesmosState(jsonString){
 						var state = JSON.parse(jsonString);
 						window.Calc.setState(state);
