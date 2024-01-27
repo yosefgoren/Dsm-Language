@@ -6,7 +6,7 @@ class WasmWrapper {
             this.api = {
                 init: Module.cwrap('init', null, null, null),
                 destroy: Module.cwrap('destroy', null, null, null),
-                compileDasm: Module.cwrap('compileDasm', 'string', '[string]', null),
+                compileDasm: Module.cwrap('compileDasm', 'string', ['string'], null),
             };
             this.api.init();
             vscode.postMessage({type: 'initDone'});
@@ -21,7 +21,9 @@ class ClientWebview {
             let msg = event.data;
             switch (msg.type) {
             case 'update':
-                webview.calc.setState(webview.compileToJson(msg.text))
+                let new_state = webview.compileToJson(msg.text);
+                // console.log(new_state);
+                webview.calc.setState(new_state)
                 break;
             }
         });
@@ -61,6 +63,7 @@ class ClientWebview {
     }
 
     compileToJson(documentText){
+        // console.log("compileToJson::documentText", documentText);
         return ClientWebview.createGraphStateFromExpressions(this.comp.api.compileDasm(documentText).split('\n'));
     }
 }
