@@ -5,7 +5,61 @@ function getMediaPath(filename: string, context: vscode.ExtensionContext, panel:
 	return panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', filename));
 }
 
+class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
+	public constructor(
+		private context: vscode.ExtensionContext
+	) {}
+	
+	public resolveCustomTextEditor(
+		document: vscode.TextDocument, 
+		webviewPanel: vscode.WebviewPanel, 
+		token: vscode.CancellationToken
+	): void | Thenable<void> {
+		webviewPanel.webview.options = {
+			enableScripts: true
+		}
+		webviewPanel.webview.html = `
+		<!DOCTYPE html>
+		<html>
+			<head>
+				<title>Untitled</title>
+				<meta charset="utf-8">
+				<meta name="viewport" content="width=device-width, initial-scale=1">
+				<!-- <script src="https://www.desmos.com/api/v1.4/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script> -->
+				<script type="text/javascript" src="${getMediaPath("calculator.js", this.context, webviewPanel)}"></script>
+			</head>
+			<body style="margin: 0;">
+				<div id="calculator" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;"></div>
+				<script type="text/javascript" src="${getMediaPath("wrapper.js", this.context, webviewPanel)}"></script>
+			</body>
+		</html>		
+		`;
+
+		function updateWebview() {
+			webviewPanel.webview.postMessage({
+				type: 'update',
+				text: document.getText(),
+			});
+		}
+
+		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+			if (e.document.uri.toString() === document.uri.toString()) {
+				updateWebview();
+			}
+		});
+	}
+}
+
 export function activate(context: vscode.ExtensionContext) {
+	//see https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/catScratchEditor.ts
+	//	seems like most relevant example.
+	vscode.window.registerCustomEditorProvider(
+		"dasm-preview",
+		new DasmTextEditorProvider(context),
+		{
+			supportsMultipleEditorsPerDocument: false
+		}
+	);
 	let disposable = vscode.commands.registerCommand('desmos-calculator-window.create-desmos-window', () => {
 		let panel = vscode.window.createWebviewPanel(
 			'graphView',
@@ -74,7 +128,6 @@ export function activate(context: vscode.ExtensionContext) {
 			</body>
 		</html>		
 		`;
-		// panel.onDidDispose(() => ...);
 	});
 
 	context.subscriptions.push(disposable);
