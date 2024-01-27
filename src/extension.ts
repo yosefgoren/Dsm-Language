@@ -26,11 +26,26 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
 				<!-- <script src="https://www.desmos.com/api/v1.4/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script> -->
-				<script type="text/javascript" src="${getMediaPath("calculator.js", this.context, webviewPanel)}"></script>
+				<script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script>
 			</head>
 			<body style="margin: 0;">
+				<script type='text/javascript'>
+					console.log("initing Module");
+					var Module = {
+						print: function(text) {
+							if(arguments.length > 1){
+								text = Array.prototype.slice.call(arguments).join(' ');
+							}
+							console.log(text);
+						},
+						printErr: function(text) {console.error(\`WASM Error: '\${text}'\`)}
+					};
+				</script>
+
+				<script async type="text/javascript" src="${getMediaPath("dasm.js", this.context, webviewPanel)}"></script>
+				<script async type="text/javascript" src="${getMediaPath("ClientWebview.js", this.context, webviewPanel)}"></script>
+				
 				<div id="calculator" style="position: absolute; top: 0; bottom: 0; left: 0; right: 0;"></div>
-				<script type="text/javascript" src="${getMediaPath("wrapper.js", this.context, webviewPanel)}"></script>
 			</body>
 		</html>		
 		`;
