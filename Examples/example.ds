@@ -1,0 +1,9 @@
+curve foo():
+    (t,t)
+
+display foo(t)
+
+curve bar():
+    (2*t,t)
+
+display bar(t)
