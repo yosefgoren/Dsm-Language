@@ -17,6 +17,17 @@
         "command": "desmos-calculator-window.create-desmos-window",
         "title": "Create Desmos Window"
       }
+    ],
+    "customEditors": [
+      {
+        "viewType": "dasm-preview",
+        "displayName": "DesAsm Preview",
+        "selector": [
+          {
+            "filenamePattern": "*.ds"
+          }
+        ]
+      }
     ]
   },
   "scripts": {
