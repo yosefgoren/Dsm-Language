@@ -25,8 +25,8 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Untitled</title>
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<!-- <script src="https://www.desmos.com/api/v1.4/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script> -->
-				<script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script>
+				<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+				<!-- <script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script> -->
 			</head>
 			<body style="margin: 0;">
 				<script type='text/javascript'>
