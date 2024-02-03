@@ -7,7 +7,8 @@ function getMediaPath(filename: string, context: vscode.ExtensionContext, panel:
 
 class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	public constructor(
-		private context: vscode.ExtensionContext
+		private context: vscode.ExtensionContext,
+		private out: vscode.OutputChannel
 	) {}
 	
 	public resolveCustomTextEditor(
@@ -49,12 +50,30 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 			</body>
 		</html>		
 		`;
+		webviewPanel.webview.onDidReceiveMessage((msg) => {
+			switch (msg.type) {
+			case 'error':
+				this.out.clear();
+				this.out.appendLine(msg.content);
+				this.out.show(true);
+				break;
+			case 'initDone':
+				break;
+			case 'success':
+				this.out.clear();
+				this.out.appendLine("compilation done.");
+				break;
+			default:
+				console.error("extension webview generated an unexpected message: ", msg);
+			}
+		});
 
 		function updateWebview() {
 			webviewPanel.webview.postMessage({
 				type: 'update',
 				text: document.getText(),
 			});
+			
 		}
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
@@ -68,9 +87,10 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 export function activate(context: vscode.ExtensionContext) {
 	//see https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/catScratchEditor.ts
 	//	seems like most relevant example.
+	let out = vscode.window.createOutputChannel("Dasm Output");
 	vscode.window.registerCustomEditorProvider(
 		"dasm-preview",
-		new DasmTextEditorProvider(context),
+		new DasmTextEditorProvider(context, out),
 		{
 			supportsMultipleEditorsPerDocument: false
 		}
