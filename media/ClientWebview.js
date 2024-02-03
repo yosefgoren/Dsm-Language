@@ -23,7 +23,13 @@ class ClientWebview {
             case 'update':
                 let new_state = webview.compileToJson(msg.text);
                 // console.log(new_state);
+                if(new_state == null){
+                    return null;
+                }
                 webview.calc.setState(new_state)
+                vscode.postMessage({
+                    type: "success"
+                });
                 break;
             }
         });
@@ -65,6 +71,13 @@ class ClientWebview {
 
     compileToJson(documentText){
         let compiled = this.comp.api.compileDasm(documentText);
+        if(compiled[0] == '!') {
+            vscode.postMessage({
+                type: "error",
+                content: compiled.substr(1)
+            });
+            return null;
+        }
         let explist = JSON.parse(compiled);
         return ClientWebview.createGraphStateFromExpressions(explist);
     }
