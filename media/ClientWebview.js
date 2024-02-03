@@ -37,25 +37,26 @@ class ClientWebview {
         this.activate();
     }
     
-    static createGraphStateFromExpressions(expressions) {
+    static createGraphStateFromExpressions(explist) {
         return {
             "expressions": {
-                "list": expressions.map(exp => {
-                    return {
-                        "color": "#c74440",
-                        "id": "1",
-                        "latex": exp,
-                        "type": "expression"
-                    }
-                })
+                "list": explist
             },
             "graph": {
+                "polarNumbers": false,
+                "showGrid": false,
+                "showXAxis": false,
+                "showYAxis": false,
                 "viewport": {
                     "xmax": 10,
                     "xmin": -10,
-                    "ymax": 15.886699507389164,
-                    "ymin": -15.886699507389164
-                }
+                    "ymax": 6.410928257925068,
+                    "ymin": -6.410928257925068
+                },
+                "xAxisMinorSubdivisions": 1,
+                "xAxisNumbers": false,
+                "yAxisMinorSubdivisions": 1,
+                "yAxisNumbers": false
             },
             "randomSeed": "f09cf492494e7aa4304b3edd13458065",
             "version": 7
@@ -63,8 +64,9 @@ class ClientWebview {
     }
 
     compileToJson(documentText){
-        // console.log("compileToJson::documentText", documentText);
-        return ClientWebview.createGraphStateFromExpressions(this.comp.api.compileDasm(documentText).split('\n'));
+        let compiled = this.comp.api.compileDasm(documentText);
+        let explist = JSON.parse(compiled);
+        return ClientWebview.createGraphStateFromExpressions(explist);
     }
 }
 
