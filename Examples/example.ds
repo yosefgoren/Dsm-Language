@@ -1,9 +1,44 @@
-curve foo():
-    (t,t)
+curve connect(u, v):
+	u*t+v*(1+-t)
 
-display foo(t)
+func dec(j):
+	 j+-1
 
-curve bar():
-    (2*t,t)
+curve linesHor(n):
+	for i in n:
+		connect(t, [0, dec(i)/dec(n), 0], [1, dec(i)/dec(n), 0])
 
-display bar(t)
+curve linesVer(n):
+	for i in n:
+		connect(t, [dec(i)/dec(n), 0, 0], [dec(i)/dec(n), 1, 0])
+
+curve lines(n):
+	linesHor(t, n)
+	~
+	linesVer(t, n)
+
+func dxx(a):
+	cos(a[3])*cos(a[1])+-sin(a[3])*sin(a[1])*sin(a[2])
+func dxy(a):
+	cos(a[3])*sin(a[1])*sin(a[2])+sin(a[3])*cos(a[1])
+func dyx(a):
+	-cos(a[3])*sin(a[1])+-sin(a[3])*cos(a[1])*sin(a[2])
+func dyy(a):
+	cos(a[3])*cos(a[1])*sin(a[2])+-sin(a[3])*sin(a[1])
+func dzx(a):
+	-sin(a[3])*cos(a[2])
+func dzy(a):
+	cos(a[3])*cos(a[2])
+	
+func staticProj(c, a):
+	(
+		dxx(a)*c[1]+dyx(a)*c[2]+dzx(a)*c[3]
+		,
+		dxy(a)*c[1]+dyy(a)*c[2]+dzy(a)*c[3]	
+	)
+
+let p=2*pi
+
+let q=0 [0:p]
+
+show staticProj(lines(t, 4)+-[0.5,0.5,0], [q, pi/4, 0])
