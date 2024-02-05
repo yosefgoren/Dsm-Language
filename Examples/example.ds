@@ -1,9 +1,55 @@
-curve foo():
-    (t,t)
+# Static Projection:
+func dxx(a):
+	cos(a[3])*cos(a[1])+-sin(a[3])*sin(a[1])*sin(a[2])
+func dxy(a):
+	cos(a[3])*sin(a[1])*sin(a[2])+sin(a[3])*cos(a[1])
+func dyx(a):
+	-cos(a[3])*sin(a[1])+-sin(a[3])*cos(a[1])*sin(a[2])
+func dyy(a):
+	cos(a[3])*cos(a[1])*sin(a[2])+-sin(a[3])*sin(a[1])
+func dzx(a):
+	-sin(a[3])*cos(a[2])
+func dzy(a):
+	cos(a[3])*cos(a[2])
+	
+func staticProj(c, a):
+	(
+		dxx(a)*c[1]+dyx(a)*c[2]+dzx(a)*c[3]
+		,
+		dxy(a)*c[1]+dyy(a)*c[2]+dzy(a)*c[3]	
+	)
 
-display foo(t)
+curve cosn():
+	cos(2*pi*t)
+curve sinn():
+	sin(2*pi*t)
 
-curve bar():
-    (2*t,t)
+let p=2*pi
 
-display bar(t)
+curve circleZ(r, z):
+	[cosn(t)*r, sinn(t)*r, z]
+
+let R1=3
+let R2=1
+let N1=10 [2:10:1] speed 1.5 wait
+let N2=10
+let Q=0 [] speed 1
+
+curve flats(n):
+	for i in n:
+		circleZ(t, R1+cosn(i/n), sinn(i/n))		
+
+func rotxy(c, q):
+	[
+		c[1]*cosn(q)+-c[2]*sinn(q),
+		c[1]*sinn(q)+c[2]*cosn(q),
+		c[3]
+	]
+
+curve stands(n):
+	for i in n:
+		rotxy([R1+cosn(t)*R2, 0, sinn(t)*R2], i/n)
+
+
+show staticProj(flats(t, N1), [p*Q, 0.7*pi/4, 0])
+show staticProj(stands(t, N2), [p*Q, 0.7*pi/4, 0])

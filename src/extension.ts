@@ -7,7 +7,8 @@ function getMediaPath(filename: string, context: vscode.ExtensionContext, panel:
 
 class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	public constructor(
-		private context: vscode.ExtensionContext
+		private context: vscode.ExtensionContext,
+		private out: vscode.OutputChannel
 	) {}
 	
 	public resolveCustomTextEditor(
@@ -25,8 +26,8 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Untitled</title>
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<!-- <script src="https://www.desmos.com/api/v1.4/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script> -->
-				<script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script>
+				<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
+				<!-- <script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script> -->
 			</head>
 			<body style="margin: 0;">
 				<script type='text/javascript'>
@@ -49,12 +50,30 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 			</body>
 		</html>		
 		`;
+		webviewPanel.webview.onDidReceiveMessage((msg) => {
+			switch (msg.type) {
+			case 'error':
+				this.out.clear();
+				this.out.appendLine(msg.content);
+				this.out.show(true);
+				break;
+			case 'initDone':
+				break;
+			case 'success':
+				this.out.clear();
+				this.out.appendLine("compilation done.");
+				break;
+			default:
+				console.error("extension webview generated an unexpected message: ", msg);
+			}
+		});
 
 		function updateWebview() {
 			webviewPanel.webview.postMessage({
 				type: 'update',
 				text: document.getText(),
 			});
+			
 		}
 
 		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
@@ -68,9 +87,10 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 export function activate(context: vscode.ExtensionContext) {
 	//see https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/catScratchEditor.ts
 	//	seems like most relevant example.
+	let out = vscode.window.createOutputChannel("Dasm Output");
 	vscode.window.registerCustomEditorProvider(
 		"dasm-preview",
-		new DasmTextEditorProvider(context),
+		new DasmTextEditorProvider(context, out),
 		{
 			supportsMultipleEditorsPerDocument: false
 		}
