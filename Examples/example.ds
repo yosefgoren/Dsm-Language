@@ -1,22 +1,4 @@
-curve connect(u, v):
-	u*t+v*(1+-t)
-
-func dec(j):
-	 j+-1
-
-curve linesHor(n):
-	for i in n:
-		connect(t, [0, dec(i)/dec(n), 0], [1, dec(i)/dec(n), 0])
-
-curve linesVer(n):
-	for i in n:
-		connect(t, [dec(i)/dec(n), 0, 0], [dec(i)/dec(n), 1, 0])
-
-curve lines(n):
-	linesHor(t, n)
-	~
-	linesVer(t, n)
-
+# Static Projection:
 func dxx(a):
 	cos(a[3])*cos(a[1])+-sin(a[3])*sin(a[1])*sin(a[2])
 func dxy(a):
@@ -37,8 +19,37 @@ func staticProj(c, a):
 		dxy(a)*c[1]+dyy(a)*c[2]+dzy(a)*c[3]	
 	)
 
+curve cosn():
+	cos(2*pi*t)
+curve sinn():
+	sin(2*pi*t)
+
 let p=2*pi
 
-let q=0 [0:p]
+curve circleZ(r, z):
+	[cosn(t)*r, sinn(t)*r, z]
 
-show staticProj(lines(t, 4)+-[0.5,0.5,0], [q, pi/4, 0])
+let R1=3
+let R2=1
+let N1=10 [2:10:1] speed 1.5 wait
+let N2=10
+let Q=0 [] speed 1
+
+curve flats(n):
+	for i in n:
+		circleZ(t, R1+cosn(i/n), sinn(i/n))		
+
+func rotxy(c, q):
+	[
+		c[1]*cosn(q)+-c[2]*sinn(q),
+		c[1]*sinn(q)+c[2]*cosn(q),
+		c[3]
+	]
+
+curve stands(n):
+	for i in n:
+		rotxy([R1+cosn(t)*R2, 0, sinn(t)*R2], i/n)
+
+
+show staticProj(flats(t, N1), [p*Q, 0.7*pi/4, 0])
+show staticProj(stands(t, N2), [p*Q, 0.7*pi/4, 0])
