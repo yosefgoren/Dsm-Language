@@ -5,10 +5,18 @@ function getMediaPath(filename: string, context: vscode.ExtensionContext, panel:
 	return panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', filename));
 }
 
+function getPathLastName(full_path: string): string {
+	
+	let parts = full_path.split('/');
+	if (parts.length == 1) {
+		parts = full_path.split('\\');
+	} 
+	return parts[parts.length-1];
+}
+
 class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	public constructor(
 		private context: vscode.ExtensionContext,
-		private out: vscode.OutputChannel
 	) {}
 	
 	public resolveCustomTextEditor(
@@ -16,6 +24,8 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel: vscode.WebviewPanel, 
 		token: vscode.CancellationToken
 	): void | Thenable<void> {
+		let out = vscode.window.createOutputChannel(`Dasm: '${getPathLastName(document.fileName)}'`);
+	
 		webviewPanel.webview.options = {
 			enableScripts: true
 		}
@@ -53,15 +63,15 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 		webviewPanel.webview.onDidReceiveMessage((msg) => {
 			switch (msg.type) {
 			case 'error':
-				this.out.clear();
-				this.out.appendLine(msg.content);
-				this.out.show(true);
+				out.clear();
+				out.appendLine(msg.content);
+				out.show(true);
 				break;
 			case 'initDone':
 				break;
 			case 'success':
-				this.out.clear();
-				this.out.appendLine("compilation done.");
+				out.clear();
+				out.appendLine("compilation done.");
 				break;
 			default:
 				console.error("extension webview generated an unexpected message: ", msg);
@@ -81,21 +91,25 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				updateWebview();
 			}
 		});
+		//TODO: eventually put 'registerCompletionItemProvider' since it should depend on specific document?
+		//		alternatively, might have to register it globally, and allow it to dispatch querying information
+		//		based on the document it's provided with.
+		//		this would require saving some global parsed open documents state.
+
 	}
 }
 
 export function activate(context: vscode.ExtensionContext) {
 	//see https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/catScratchEditor.ts
 	//	seems like most relevant example.
-	let out = vscode.window.createOutputChannel("Dasm Output");
 	let disposable = vscode.window.registerCustomEditorProvider(
 		"dasm-preview",
-		new DasmTextEditorProvider(context, out),
+		new DasmTextEditorProvider(context),
 		{
 			supportsMultipleEditorsPerDocument: false
 		}
 	);
-	
+
 	context.subscriptions.push(disposable);
 }
 
