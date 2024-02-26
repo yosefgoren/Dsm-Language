@@ -36,8 +36,8 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Untitled</title>
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>
-				<!-- <script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script> -->
+				<!-- <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script> -->
+				<script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script>
 			</head>
 			<body style="margin: 0;">
 				<script type='text/javascript'>
@@ -109,8 +109,32 @@ export function activate(context: vscode.ExtensionContext) {
 			supportsMultipleEditorsPerDocument: false
 		}
 	);
+	
+	vscode.languages.registerCompletionItemProvider({
+		language: 'dsm',
+		scheme: 'file'
+	}, {
+		provideCompletionItems(document, position, token, context) {
+			let i = new vscode.CompletionItem("stuff", vscode.CompletionItemKind.Text);
+			i.range = new vscode.Range(position, position);
+			return [i]
+		}
+	}, '.');
+	
+	vscode.languages.registerHoverProvider({
+		language: 'dsm',
+		scheme: 'file'
+	}, {
+		provideHover(doc, pos, _tok) {
+			let ran = doc.getWordRangeAtPosition(pos, /'[A-Za-z0-9_']+|[A-Za-z][A-Za-z0-9_']*|[!%&$#+\-/:<=>?@\\~`^|*]+|~?[0-9]+\.[0-9]+([Ee]~?[0-9]+)?|~?[0-9]+|~?0x[0-9A-Fa-f]+|0w[0-9]+|0wx[0-9A-Fa-f]+/);
+			if (ran) {
+				return new vscode.Hover(doc.getText(ran));
+			}
+		}
+	});
 
 	context.subscriptions.push(disposable);
-}
+}	
+
 
 export function deactivate() {}
