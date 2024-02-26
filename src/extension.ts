@@ -14,10 +14,14 @@ function getPathLastName(full_path: string): string {
 	return parts[parts.length-1];
 }
 
+
+var isense: Array<any> | null = null;
+
 class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	public constructor(
 		private context: vscode.ExtensionContext,
 	) {}
+
 	
 	public resolveCustomTextEditor(
 		document: vscode.TextDocument, 
@@ -26,6 +30,10 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	): void | Thenable<void> {
 		let out = vscode.window.createOutputChannel(`Dasm: '${getPathLastName(document.fileName)}'`);
 	
+		let online = `<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>`
+		let ver = "1.8";
+		let offline = `<script type="text/javascript" src="${getMediaPath(`DesmosEngine${ver}.js`, this.context, webviewPanel)}"></script>/`
+
 		webviewPanel.webview.options = {
 			enableScripts: true
 		}
@@ -36,8 +44,7 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Untitled</title>
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				<!-- <script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script> -->
-				<script type="text/javascript" src="${getMediaPath("DesmosEngine.js", this.context, webviewPanel)}"></script>
+				${online}	
 			</head>
 			<body style="margin: 0;">
 				<script type='text/javascript'>
@@ -72,6 +79,9 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 			case 'success':
 				out.clear();
 				out.appendLine("compilation done.");
+				break;
+			case 'intellisense':
+				isense = msg.content;
 				break;
 			default:
 				console.error("extension webview generated an unexpected message: ", msg);
@@ -114,10 +124,31 @@ export function activate(context: vscode.ExtensionContext) {
 		language: 'dsm',
 		scheme: 'file'
 	}, {
-		provideCompletionItems(document, position, token, context) {
-			let i = new vscode.CompletionItem("stuff", vscode.CompletionItemKind.Text);
-			i.range = new vscode.Range(position, position);
-			return [i]
+		provideCompletionItems(doc, pos, _tok, context) {
+			let cur_token_range = doc.getWordRangeAtPosition(pos);
+			console.log("cur_token_range", cur_token_range);
+			console.log("isense", isense);
+			if (cur_token_range == undefined || isense == null) {
+				console.log("not generating comp items due to missing intellisense");
+				return [];
+			}
+			let token_start = doc.getText(cur_token_range);
+			console.log("token_start", token_start);
+
+			let completions = isense?.filter((sym_info) => {
+				return sym_info["symbol"]?.startsWith(token_start);
+			}).map((sym_info) => {
+				let sym = sym_info["symbol"] as string;
+				// let comp_str = sym?.substring(token_start.length, sym?.length);
+				let comp_type = sym_info.hasOwnProperty("args")
+					? vscode.CompletionItemKind.Function
+					: vscode.CompletionItemKind.Variable;
+				let comp_item = new vscode.CompletionItem(sym, comp_type);
+				comp_item.range = cur_token_range;
+				return comp_item;
+			});
+			console.log("completions are:", completions);
+			return completions;
 		}
 	}, '.');
 	
@@ -126,10 +157,20 @@ export function activate(context: vscode.ExtensionContext) {
 		scheme: 'file'
 	}, {
 		provideHover(doc, pos, _tok) {
-			let ran = doc.getWordRangeAtPosition(pos, /'[A-Za-z0-9_']+|[A-Za-z][A-Za-z0-9_']*|[!%&$#+\-/:<=>?@\\~`^|*]+|~?[0-9]+\.[0-9]+([Ee]~?[0-9]+)?|~?[0-9]+|~?0x[0-9A-Fa-f]+|0w[0-9]+|0wx[0-9A-Fa-f]+/);
+			// let ran = doc.getWordRangeAtPosition(pos, /'[A-Za-z0-9_']+|[A-Za-z][A-Za-z0-9_']*|[!%&$#+\-/:<=>?@\\~`^|*]+|~?[0-9]+\.[0-9]+([Ee]~?[0-9]+)?|~?[0-9]+|~?0x[0-9A-Fa-f]+|0w[0-9]+|0wx[0-9A-Fa-f]+/);
+			let ran = doc.getWordRangeAtPosition(pos);
 			if (ran) {
 				return new vscode.Hover(doc.getText(ran));
 			}
+		}
+	});
+
+	vscode.languages.registerDefinitionProvider({
+		language: 'dsm',
+		scheme: 'file'
+	}, {
+		provideDefinition(doc, pos, _tok) {
+			return new vscode.Location(doc.uri, new vscode.Range(0, 0, 0, 1));
 		}
 	});
 

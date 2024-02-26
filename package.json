@@ -17,6 +17,7 @@
             "filenamePattern": "*.ds"
           }
         ],
+        "priority": "option",
         "viewType": "dasm-preview"
       }
     ],
