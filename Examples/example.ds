@@ -33,7 +33,7 @@ let R1=3
 let R2=1
 let N1=10
 let N2=10
-let Q=0 [] speed 0.5
+let Q in 0, 1 speed 0.5
 
 curve flats(n):
 	for i in n:
@@ -55,4 +55,4 @@ curve torous():
 	~
 	staticProj(stands(t, N2), [p*Q, 0.7*pi/4, 0])
 
-show torous(t) in [0:Q]
+show torous(t) in 0, Q
