@@ -126,15 +126,12 @@ export function activate(context: vscode.ExtensionContext) {
 	}, {
 		provideCompletionItems(doc, pos, _tok, context) {
 			let cur_token_range = doc.getWordRangeAtPosition(pos);
-			console.log("cur_token_range", cur_token_range);
-			console.log("isense", isense);
 			if (cur_token_range == undefined || isense == null) {
 				console.log("not generating comp items due to missing intellisense");
 				return [];
 			}
 			let token_start = doc.getText(cur_token_range);
-			console.log("token_start", token_start);
-
+			
 			let completions = isense?.filter((sym_info) => {
 				return sym_info["symbol"]?.startsWith(token_start);
 			}).map((sym_info) => {
@@ -147,7 +144,6 @@ export function activate(context: vscode.ExtensionContext) {
 				comp_item.range = cur_token_range;
 				return comp_item;
 			});
-			console.log("completions are:", completions);
 			return completions;
 		}
 	}, '.');
@@ -170,7 +166,21 @@ export function activate(context: vscode.ExtensionContext) {
 		scheme: 'file'
 	}, {
 		provideDefinition(doc, pos, _tok) {
-			return new vscode.Location(doc.uri, new vscode.Range(0, 0, 0, 1));
+			let cur_tok_range = doc.getWordRangeAtPosition(pos);
+			if (cur_tok_range == undefined || isense == null) {
+				console.log("not generating comp items due to missing intellisense");
+				return [];
+			}
+			let cur_tok = doc.getText(cur_tok_range);
+			let res = null;
+			isense?.forEach((sym_info) => {
+				if (sym_info["symbol"] == cur_tok) {
+					let line = Number(sym_info["lineno"])-1;
+					res = new vscode.Location(doc.uri, new vscode.Range(line, 0, line, 0));
+				}
+			});
+
+			return res;
 		}
 	});
 
