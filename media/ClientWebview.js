@@ -78,7 +78,16 @@ class ClientWebview {
             });
             return null;
         }
-        let explist = JSON.parse(compiled);
+        try {
+            var explist = JSON.parse(compiled);
+        } catch (err) {
+            vscode.postMessage({
+                type: "error",
+                content: `Internal Error: Compiler output is not in a valid json format.\n\t${err}` 
+            });
+            console.debug("compiled output json was: ", compiled);
+            throw err;
+        }
         return ClientWebview.createGraphStateFromExpressions(explist);
     }
 }
