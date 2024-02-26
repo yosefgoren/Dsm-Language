@@ -70,25 +70,29 @@ class ClientWebview {
     }
 
     compileToJson(documentText){
-        let compiled = this.comp.api.compileDasm(documentText);
-        if(compiled[0] == '!') {
+        let raw_output = this.comp.api.compileDasm(documentText);
+        if(raw_output[0] == '!') {
             vscode.postMessage({
                 type: "error",
-                content: compiled.substr(1)
+                content: raw_output.substr(1)
             });
             return null;
         }
         try {
-            var explist = JSON.parse(compiled);
+            var output = JSON.parse(raw_output)
         } catch (err) {
             vscode.postMessage({
                 type: "error",
                 content: `Internal Error: Compiler output is not in a valid json format.\n\t${err}` 
             });
-            console.debug("compiled output json was: ", compiled);
+            console.debug("compiled output json was: ", raw_output);
             throw err;
         }
-        return ClientWebview.createGraphStateFromExpressions(explist);
+        vscode.postMessage({
+            type: "intellisense",
+            content: output["intellisense"]
+        });
+        return ClientWebview.createGraphStateFromExpressions(output["instructions"]);
     }
 }
 
