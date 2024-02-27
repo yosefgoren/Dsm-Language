@@ -44,7 +44,7 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Untitled</title>
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				${online}	
+				${offline}	
 			</head>
 			<body style="margin: 0;">
 				<script type='text/javascript'>
@@ -128,7 +128,7 @@ export function activate(context: vscode.ExtensionContext) {
 			let cur_token_range = doc.getWordRangeAtPosition(pos);
 			if (cur_token_range == undefined || isense == null) {
 				console.log("not generating comp items due to missing intellisense");
-				return [];
+				return;
 			}
 			let token_start = doc.getText(cur_token_range);
 			
@@ -136,7 +136,6 @@ export function activate(context: vscode.ExtensionContext) {
 				return sym_info["symbol"]?.startsWith(token_start);
 			}).map((sym_info) => {
 				let sym = sym_info["symbol"] as string;
-				// let comp_str = sym?.substring(token_start.length, sym?.length);
 				let comp_type = sym_info.hasOwnProperty("args")
 					? vscode.CompletionItemKind.Function
 					: vscode.CompletionItemKind.Variable;
@@ -147,16 +146,34 @@ export function activate(context: vscode.ExtensionContext) {
 			return completions;
 		}
 	}, '.');
-	
+
 	vscode.languages.registerHoverProvider({
 		language: 'dsm',
 		scheme: 'file'
 	}, {
 		provideHover(doc, pos, _tok) {
 			// let ran = doc.getWordRangeAtPosition(pos, /'[A-Za-z0-9_']+|[A-Za-z][A-Za-z0-9_']*|[!%&$#+\-/:<=>?@\\~`^|*]+|~?[0-9]+\.[0-9]+([Ee]~?[0-9]+)?|~?[0-9]+|~?0x[0-9A-Fa-f]+|0w[0-9]+|0wx[0-9A-Fa-f]+/);
-			let ran = doc.getWordRangeAtPosition(pos);
-			if (ran) {
-				return new vscode.Hover(doc.getText(ran));
+			let cur_tok_range = doc.getWordRangeAtPosition(pos);
+			if (cur_tok_range == undefined || isense == null) {
+				console.log("cannot find definition due to missing intellisense");
+				return;
+			}
+			let cur_tok = doc.getText(cur_tok_range);
+			let res: null | string = null;
+			isense.forEach((sym_info) => {
+				if (sym_info["symbol"] == cur_tok && sym_info.hasOwnProperty("args")) {
+					res = sym_info["symbol"]+"("
+					sym_info["args"].forEach((arg: String) => {
+						res += arg + ", ";
+					});
+					if (res[res.length-1] != "(") {
+						res = res.substring(0, res.length-2);
+					}
+					res += ")";
+				}
+			});
+			if (res != null) {
+				return new vscode.Hover(res);
 			}
 		}
 	});
@@ -168,8 +185,8 @@ export function activate(context: vscode.ExtensionContext) {
 		provideDefinition(doc, pos, _tok) {
 			let cur_tok_range = doc.getWordRangeAtPosition(pos);
 			if (cur_tok_range == undefined || isense == null) {
-				console.log("not generating comp items due to missing intellisense");
-				return [];
+				console.log("cannot find definition due to missing intellisense");
+				return;
 			}
 			let cur_tok = doc.getText(cur_tok_range);
 			let res = null;
