@@ -1,21 +1,49 @@
-curve hline(h):
-    (t*4+-2, h+-2)
+# Static Projection:
+func dxx(a):
+	cos(a[3])*cos(a[1])+-sin(a[3])*sin(a[1])*sin(a[2])
+func dxy(a):
+	cos(a[3])*sin(a[1])*sin(a[2])+sin(a[3])*cos(a[1])
+func dyx(a):
+	-cos(a[3])*sin(a[1])+-sin(a[3])*cos(a[1])*sin(a[2])
+func dyy(a):
+	cos(a[3])*cos(a[1])*sin(a[2])+-sin(a[3])*sin(a[1])
+func dzx(a):
+	-sin(a[3])*cos(a[2])
+func dzy(a):
+	cos(a[3])*cos(a[2])
+	
+func staticProj(c, a):
+	(
+		dxx(a)*c[1]+dyx(a)*c[2]+dzx(a)*c[3]
+		,
+		dxy(a)*c[1]+dyy(a)*c[2]+dzy(a)*c[3]	
+	)
 
-curve hlines():
-    for i in 5:
-        hline(t, i+-1)
+curve connect(u, v):
+    u*(1+-t) + v*t
 
-curve vline(h):
-    (h+-2, t*4+-2)
+curve rows(n):
+    for i in n+1:
+        connect(t, (0, (i+-1)/n), (1, (i+-1)/n))+(-0.5, -0.5)
 
-curve vlines():
-    for i in 5:
-        vline(t, i+-1)
+func swap(u):
+    (u.y, u.x)
 
-curve lines():
-    vlines(t)
+curve cols(n):
+    swap(rows(t, n))
+    
+curve grid(n):
+    rows(t, n)
     ~
-    hlines(t)
+    cols(t, n)
 
-let Q=0 []
-show lines(t) in [0:Q]
+func waves(u):
+    e^-(u.x^2+u.y^2)
+
+let N = 8
+let Q = 1
+    in 0, 1
+    speed 1
+let Rot = 0 in 0, 1 speed 0.5
+show staticProj([grid(t, N).x, grid(t, N).y, waves(grid(t,N))], [2*pi*Rot, pi/4, 0])
+    in 0, Q
