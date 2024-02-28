@@ -50,14 +50,14 @@ class ClientWebview {
             },
             "graph": {
                 "polarNumbers": false,
-                "showGrid": false,
+                "showGrid": true,
                 "showXAxis": false,
                 "showYAxis": false,
                 "viewport": {
-                    "xmax": 10,
-                    "xmin": -10,
-                    "ymax": 6.410928257925068,
-                    "ymin": -6.410928257925068
+                    "xmax": 3,
+                    "xmin": -3,
+                    "ymax": 3,
+                    "ymin": -3
                 },
                 "xAxisMinorSubdivisions": 1,
                 "xAxisNumbers": false,
