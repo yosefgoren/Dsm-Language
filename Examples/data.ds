@@ -1,0 +1,47 @@
+# Static Projection:
+func dxx(a):
+	cos(a[3])*cos(a[1])+-sin(a[3])*sin(a[1])*sin(a[2])
+func dxy(a):
+	cos(a[3])*sin(a[1])*sin(a[2])+sin(a[3])*cos(a[1])
+func dyx(a):
+	-cos(a[3])*sin(a[1])+-sin(a[3])*cos(a[1])*sin(a[2])
+func dyy(a):
+	cos(a[3])*cos(a[1])*sin(a[2])+-sin(a[3])*sin(a[1])
+func dzx(a):
+	-sin(a[3])*cos(a[2])
+func dzy(a):
+	cos(a[3])*cos(a[2])
+	
+func staticProj(c, a):
+	(
+		dxx(a)*c[1]+dyx(a)*c[2]+dzx(a)*c[3]
+		,
+		dxy(a)*c[1]+dyy(a)*c[2]+dzy(a)*c[3]	
+	)
+
+curve connect(u, v):
+    u*(1-t) + v*t
+
+let L = [
+	(0,0),
+	(1,1),
+	(2,1),
+	(-1,-1)
+]
+
+let N = L.length
+
+curve circle(v, R):
+	(cos(2*pi*t), sin(2*pi*t))*R + v
+
+curve axis():
+	connect(t, (-10, 0), (10, 0))
+	~
+	connect(t, (0, -10), (0, 10))
+
+curve circlesEach(ls, R):
+	for i in N:
+		circle(t, ls[i], R)
+
+show circlesEach(t, L, 0.05)
+show axis(t)
