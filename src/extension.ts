@@ -1,5 +1,14 @@
 import * as vscode from 'vscode';
 
+export function activate(context: vscode.ExtensionContext) {
+	vscode.commands.registerCommand('dsmLanguage.helloWorld', ()=> {
+		vscode.window.showInformationMessage("hello, world");
+	});
+}
+
+
+
+
 
 function getMediaPath(filename: string, context: vscode.ExtensionContext, panel: vscode.WebviewPanel) {
 	return panel.webview.asWebviewUri(vscode.Uri.joinPath(context.extensionUri, 'media', filename));
@@ -21,22 +30,27 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	public constructor(
 		private context: vscode.ExtensionContext,
 	) {}
-
 	
 	public resolveCustomTextEditor(
 		document: vscode.TextDocument, 
 		webviewPanel: vscode.WebviewPanel, 
 		token: vscode.CancellationToken
 	): void | Thenable<void> {
-		let out = vscode.window.createOutputChannel(`Dasm: '${getPathLastName(document.fileName)}'`);
-	
-		let online = `<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>`
-		let ver = "1.8";
-		let offline = `<script type="text/javascript" src="${getMediaPath(`DesmosEngine${ver}.js`, this.context, webviewPanel)}"></script>/`
+		let out = vscode.window.createOutputChannel(`Dasm: '${getPathLastName(document.fileName)}'`);		
 
 		webviewPanel.webview.options = {
 			enableScripts: true
 		}
+
+		let context = this.context;
+		function getDesmosEngine(): string {
+			let online = `<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>`
+			let ver = "1.8";
+			let offline = `<script type="text/javascript" src="${getMediaPath(`DesmosEngine${ver}.js`, context, webviewPanel)}"></script>/`
+		
+			return offline;
+		}
+
 		webviewPanel.webview.html = `
 		<!DOCTYPE html>
 		<html>
@@ -44,7 +58,7 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Untitled</title>
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				${offline}	
+				${getDesmosEngine()}	
 			</head>
 			<body style="margin: 0;">
 				<script type='text/javascript'>
@@ -109,100 +123,100 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	}
 }
 
-export function activate(context: vscode.ExtensionContext) {
-	//see https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/catScratchEditor.ts
-	//	seems like most relevant example.
-	let disposable = vscode.window.registerCustomEditorProvider(
-		"dasm-preview",
-		new DasmTextEditorProvider(context),
-		{
-			supportsMultipleEditorsPerDocument: false
-		}
-	);
+// export function activate(context: vscode.ExtensionContext) {
+// 	//see https://github.com/microsoft/vscode-extension-samples/blob/main/custom-editor-sample/src/catScratchEditor.ts
+// 	//	seems like most relevant example.
+// 	let disposable = vscode.window.registerCustomEditorProvider(
+// 		"dasm-preview",
+// 		new DasmTextEditorProvider(context),
+// 		{
+// 			supportsMultipleEditorsPerDocument: false
+// 		}
+// 	);
 	
-	vscode.languages.registerCompletionItemProvider({
-		language: 'dsm',
-		scheme: 'file'
-	}, {
-		provideCompletionItems(doc, pos, _tok, context) {
-			let cur_token_range = doc.getWordRangeAtPosition(pos);
-			if (cur_token_range == undefined || isense == null) {
-				console.log("not generating comp items due to missing intellisense");
-				return;
-			}
-			let token_start = doc.getText(cur_token_range);
+// 	vscode.languages.registerCompletionItemProvider({
+// 		language: 'dsm',
+// 		scheme: 'file'
+// 	}, {
+// 		provideCompletionItems(doc, pos, _tok, context) {
+// 			let cur_token_range = doc.getWordRangeAtPosition(pos);
+// 			if (cur_token_range == undefined || isense == null) {
+// 				console.log("not generating comp items due to missing intellisense");
+// 				return;
+// 			}
+// 			let token_start = doc.getText(cur_token_range);
 			
-			let completions = isense?.filter((sym_info) => {
-				return sym_info["symbol"]?.startsWith(token_start);
-			}).map((sym_info) => {
-				let sym = sym_info["symbol"] as string;
-				let comp_type = sym_info.hasOwnProperty("args")
-					? vscode.CompletionItemKind.Function
-					: vscode.CompletionItemKind.Variable;
-				let comp_item = new vscode.CompletionItem(sym, comp_type);
-				comp_item.range = cur_token_range;
-				return comp_item;
-			});
-			return completions;
-		}
-	}, '.');
+// 			let completions = isense?.filter((sym_info) => {
+// 				return sym_info["symbol"]?.startsWith(token_start);
+// 			}).map((sym_info) => {
+// 				let sym = sym_info["symbol"] as string;
+// 				let comp_type = sym_info.hasOwnProperty("args")
+// 					? vscode.CompletionItemKind.Function
+// 					: vscode.CompletionItemKind.Variable;
+// 				let comp_item = new vscode.CompletionItem(sym, comp_type);
+// 				comp_item.range = cur_token_range;
+// 				return comp_item;
+// 			});
+// 			return completions;
+// 		}
+// 	}, '.');
 
-	vscode.languages.registerHoverProvider({
-		language: 'dsm',
-		scheme: 'file'
-	}, {
-		provideHover(doc, pos, _tok) {
-			// let ran = doc.getWordRangeAtPosition(pos, /'[A-Za-z0-9_']+|[A-Za-z][A-Za-z0-9_']*|[!%&$#+\-/:<=>?@\\~`^|*]+|~?[0-9]+\.[0-9]+([Ee]~?[0-9]+)?|~?[0-9]+|~?0x[0-9A-Fa-f]+|0w[0-9]+|0wx[0-9A-Fa-f]+/);
-			let cur_tok_range = doc.getWordRangeAtPosition(pos);
-			if (cur_tok_range == undefined || isense == null) {
-				console.log("cannot find definition due to missing intellisense");
-				return;
-			}
-			let cur_tok = doc.getText(cur_tok_range);
-			let res: null | string = null;
-			isense.forEach((sym_info) => {
-				if (sym_info["symbol"] == cur_tok && sym_info.hasOwnProperty("args")) {
-					res = sym_info["symbol"]+"("
-					sym_info["args"].forEach((arg: String) => {
-						res += arg + ", ";
-					});
-					if (res[res.length-1] != "(") {
-						res = res.substring(0, res.length-2);
-					}
-					res += ")";
-				}
-			});
-			if (res != null) {
-				return new vscode.Hover(res);
-			}
-		}
-	});
+// 	vscode.languages.registerHoverProvider({
+// 		language: 'dsm',
+// 		scheme: 'file'
+// 	}, {
+// 		provideHover(doc, pos, _tok) {
+// 			// let ran = doc.getWordRangeAtPosition(pos, /'[A-Za-z0-9_']+|[A-Za-z][A-Za-z0-9_']*|[!%&$#+\-/:<=>?@\\~`^|*]+|~?[0-9]+\.[0-9]+([Ee]~?[0-9]+)?|~?[0-9]+|~?0x[0-9A-Fa-f]+|0w[0-9]+|0wx[0-9A-Fa-f]+/);
+// 			let cur_tok_range = doc.getWordRangeAtPosition(pos);
+// 			if (cur_tok_range == undefined || isense == null) {
+// 				console.log("cannot find definition due to missing intellisense");
+// 				return;
+// 			}
+// 			let cur_tok = doc.getText(cur_tok_range);
+// 			let res: null | string = null;
+// 			isense.forEach((sym_info) => {
+// 				if (sym_info["symbol"] == cur_tok && sym_info.hasOwnProperty("args")) {
+// 					res = sym_info["symbol"]+"("
+// 					sym_info["args"].forEach((arg: String) => {
+// 						res += arg + ", ";
+// 					});
+// 					if (res[res.length-1] != "(") {
+// 						res = res.substring(0, res.length-2);
+// 					}
+// 					res += ")";
+// 				}
+// 			});
+// 			if (res != null) {
+// 				return new vscode.Hover(res);
+// 			}
+// 		}
+// 	});
 
-	vscode.languages.registerDefinitionProvider({
-		language: 'dsm',
-		scheme: 'file'
-	}, {
-		provideDefinition(doc, pos, _tok) {
-			let cur_tok_range = doc.getWordRangeAtPosition(pos);
-			if (cur_tok_range == undefined || isense == null) {
-				console.log("cannot find definition due to missing intellisense");
-				return;
-			}
-			let cur_tok = doc.getText(cur_tok_range);
-			let res = null;
-			isense?.forEach((sym_info) => {
-				if (sym_info["symbol"] == cur_tok) {
-					let line = Number(sym_info["lineno"])-1;
-					res = new vscode.Location(doc.uri, new vscode.Range(line, 0, line, 0));
-				}
-			});
+// 	vscode.languages.registerDefinitionProvider({
+// 		language: 'dsm',
+// 		scheme: 'file'
+// 	}, {
+// 		provideDefinition(doc, pos, _tok) {
+// 			let cur_tok_range = doc.getWordRangeAtPosition(pos);
+// 			if (cur_tok_range == undefined || isense == null) {
+// 				console.log("cannot find definition due to missing intellisense");
+// 				return;
+// 			}
+// 			let cur_tok = doc.getText(cur_tok_range);
+// 			let res = null;
+// 			isense?.forEach((sym_info) => {
+// 				if (sym_info["symbol"] == cur_tok) {
+// 					let line = Number(sym_info["lineno"])-1;
+// 					res = new vscode.Location(doc.uri, new vscode.Range(line, 0, line, 0));
+// 				}
+// 			});
 
-			return res;
-		}
-	});
+// 			return res;
+// 		}
+// 	});
 
-	context.subscriptions.push(disposable);
-}	
+// 	context.subscriptions.push(disposable);
+// }	
 
 
 export function deactivate() {}

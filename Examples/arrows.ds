@@ -1,0 +1,59 @@
+
+# Scale normalization:
+let bot = -1
+let top = 1
+let left = -2
+let right = 2
+
+show (left, top)
+show (right, bot)
+
+func normX(x):
+    x*(right+-left) + left
+func normY(y):
+    y*(top+-bot) + bot
+
+func norm(x, y):
+    (normX(x), normY(y))
+
+func normp(p):
+    norm(p.x, p.y)
+
+# Point rotation:
+func rotAngle(p, angle):
+    (p.x*cos(angle)+-p.y*sin(angle), p.x*sin(angle)+p.y*cos(angle))
+
+func rotRelPoint(center, remote, angle):
+    center+rotAngle(remote+-center, angle)
+
+
+# Lines:
+curve connect(a, b):
+    (1+-t)*a + t*b
+
+curve moveLine(start, end):
+    connect(t, norm(start, 1), norm(end, 0))
+
+curve rotRelLine(center, remote, angle):
+    connect(t, center, rotRelPoint(center, remote, angle))
+
+let SQRT2 = 1.414213
+let HEADRAT = 0.07
+
+curve downArrow(start, end):
+    rotRelLine(t, moveLine(1+-HEADRAT, start, end), moveLine(1, start, end), pi/2)
+    ~rotRelLine(t, moveLine(1+-HEADRAT, start, end), moveLine(1, start, end), -pi/2)
+    ~rotRelLine(t, moveLine(1, start, end), moveLine(1+-(HEADRAT*SQRT2), start, end), -pi/4)
+    ~rotRelLine(t, moveLine(1, start, end), moveLine(1+-(HEADRAT*SQRT2), start, end), pi/4)
+    ~moveLine(t*(1+-HEADRAT), start, end)
+
+# Main:
+
+let Q=1 in wait
+
+curve drawing():
+    connect(t, norm(0, 1), norm(1, 1))
+    ~connect(t, norm(0, 0), norm(1, 0))
+    ~downArrow(t, 0.3, 0.5)
+
+show drawing(t) in 0, Q

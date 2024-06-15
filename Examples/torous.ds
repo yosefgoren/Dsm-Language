@@ -29,11 +29,11 @@ let p=2*pi
 curve circleZ(r, z):
 	[cosn(t)*r, sinn(t)*r, z]
 
-let R1=3
+let R1=2.3
 let R2=1
-let N1=10
-let N2=10
-let Q in 0, 1 speed 0.5
+let N1=12
+let N2=12
+let Q in 0, 1 speed 0.3
 
 curve flats(n):
 	for i in n:
@@ -55,4 +55,4 @@ curve torous():
 	~
 	staticProj(stands(t, N2), [p*Q, 0.7*pi/4, 0])
 
-show torous(t) in 0, Q
+show torous(t) in 0, 1

@@ -3,12 +3,6 @@
     "Programming Languages"
   ],
   "contributes": {
-    "commands": [
-      {
-        "command": "desmos-calculator-window.create-desmos-window",
-        "title": "Create Desmos Window"
-      }
-    ],
     "customEditors": [
       {
         "displayName": "DesAsm Preview",
@@ -40,9 +34,24 @@
         "id": "dsm",
         "configuration": "./language-configuration.json"
       }
-    ]
+    ],
+    "configuration":{
+      "title": "",
+      "properties": {
+        "dsmLang.desmosEngineOffline": {
+          "type": "boolean",
+          "default": true,
+          "description": "if true, the desmos engine used by dsm intrepreter will be an offline version of the desmos api"
+        },
+        "dsmLAng.desmosEngineVersion": {
+          "type": "string",
+          "default": "1.8",
+          "description": "the version of the desmos engined used by the dsm interpreter. currently only 1.8 and 1.4 are supported"
+        }
+      }
+    }
   },
-  "description": "A Visual Studio Code extension which provides a command for creating a window with the desmos graphing calculator.",
+  "description": "Language Interpreter & Support for Dsm.",
   "devDependencies": {
     "@types/glob": "^8.1.0",
     "@types/mocha": "^10.0.1",
@@ -56,12 +65,12 @@
     "mocha": "^10.2.0",
     "typescript": "^5.1.3"
   },
-  "displayName": "Desmos-Calculator-Window",
+  "displayName": "Dsm-Language",
   "engines": {
     "vscode": "^1.83.0"
   },
   "main": "./out/extension.js",
-  "name": "desmos-calculator-window",
+  "name": "Dsm-Language",
   "publisher": "octopus-writer",
   "repository": {
     "url": "https://github.com/yosefgoren/Desmos-Calculator-Window.git"
