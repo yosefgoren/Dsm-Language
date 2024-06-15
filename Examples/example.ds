@@ -65,5 +65,7 @@ show (Q+base.x,G+base.y)
 
 show box(t, base.x, base.y)
 
+let ls = [2, 3, 4, 7 ,10, 2]
+
 show staticProj(flats(t, N1), [p, 0.7*pi/4, 0])*0.2 in 0, Q
 show staticProj(stands(t, N2), [p, 0.7*pi/4, 0])*0.2 in 0, G
