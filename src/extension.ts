@@ -85,6 +85,7 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				out.appendLine("compilation done.");
 				break;
 			case 'intellisense':
+				// console.log("setting isense: ", isense);
 				isense = msg.content;
 				break;
 			default:
@@ -174,17 +175,25 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 			let cur_tok = doc.getText(cur_tok_range);
+			// console.log("searching for match: ", cur_tok);
 			let res: null | string = null;
 			isense.forEach((sym_info) => {
-				if (sym_info["symbol"] == cur_tok && sym_info.hasOwnProperty("args")) {
-					res = sym_info["symbol"]+"("
-					sym_info["args"].forEach((arg: String) => {
-						res += arg + ", ";
-					});
-					if (res[res.length-1] != "(") {
-						res = res.substring(0, res.length-2);
+				if (sym_info["symbol"] == cur_tok) {
+					res = sym_info["symbol"];
+					if(res == null){
+						res = "(null)";
 					}
-					res += ")";
+					if(sym_info.hasOwnProperty("args")){
+						res += "(";
+						sym_info["args"].forEach((arg: String) => {
+							res += arg + ", ";
+						});
+						if (res[res.length-1] != "(") {
+							res = res.substring(0, res.length-2);
+						}
+						res += ")";
+					}
+					res += " : " + sym_info["type"];
 				}
 			});
 			if (res != null) {
