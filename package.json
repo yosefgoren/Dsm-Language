@@ -56,12 +56,12 @@
     "mocha": "^10.2.0",
     "typescript": "^5.1.3"
   },
-  "displayName": "Desmos-Calculator-Window",
+  "displayName": "Dsm-Language",
   "engines": {
     "vscode": "^1.83.0"
   },
   "main": "./out/extension.js",
-  "name": "desmos-calculator-window",
+  "name": "dsm-language",
   "publisher": "octopus-writer",
   "repository": {
     "url": "https://github.com/yosefgoren/Desmos-Calculator-Window.git"
@@ -74,5 +74,5 @@
     "vscode:prepublish": "npm run compile",
     "watch": "tsc -watch -p ./"
   },
-  "version": "0.0.1"
+  "version": "0.2.0"
 }
