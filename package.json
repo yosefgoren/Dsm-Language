@@ -5,8 +5,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "desmos-calculator-window.create-desmos-window",
-        "title": "Create Desmos Window"
+        "command": "dsmLanguage.openToSide",
+        "title": "Open Dsm View beside source"
       }
     ],
     "customEditors": [
@@ -74,5 +74,5 @@
     "vscode:prepublish": "npm run compile",
     "watch": "tsc -watch -p ./"
   },
-  "version": "0.2.0"
+  "version": "0.3.0"
 }
