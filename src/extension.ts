@@ -30,12 +30,16 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 	): void | Thenable<void> {
 		let out = vscode.window.createOutputChannel(`Dasm: '${getPathLastName(document.fileName)}'`);
 	
-		let online = `<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>`
-		let ver = "1.8";
-		let offline = `<script type="text/javascript" src="${getMediaPath(`DesmosEngine${ver}.js`, this.context, webviewPanel)}"></script>/`
-
 		webviewPanel.webview.options = {
 			enableScripts: true
+		}
+		let context = this.context;
+		function getDesmosEngine(): string {
+			let online = `<script src="https://www.desmos.com/api/v1.8/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>`
+			let ver = "1.8";
+			let offline = `<script type="text/javascript" src="${getMediaPath(`DesmosEngine${ver}.js`, context, webviewPanel)}"></script>/`
+
+			return online;
 		}
 		webviewPanel.webview.html = `
 		<!DOCTYPE html>
@@ -44,7 +48,7 @@ class DasmTextEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Untitled</title>
 				<meta charset="utf-8">
 				<meta name="viewport" content="width=device-width, initial-scale=1">
-				${offline}	
+				${getDesmosEngine()}	
 			</head>
 			<body style="margin: 0;">
 				<script type='text/javascript'>
@@ -119,6 +123,17 @@ export function activate(context: vscode.ExtensionContext) {
 			supportsMultipleEditorsPerDocument: false
 		}
 	);
+
+	vscode.commands.registerCommand('dsmLanguage.openToSide', ()=> {
+		if(vscode.window.activeTextEditor === undefined) {
+			vscode.window.showErrorMessage("Failed to open preview. No active editor.");
+			return;
+		}
+
+		vscode.commands.executeCommand('vscode.openWith', vscode.window.activeTextEditor.document.uri, 'dasm-preview', vscode.ViewColumn.Two).then(()=>{
+			vscode.commands.executeCommand("workbench.action.focusFirstEditorGroup");
+		})
+	})
 	
 	vscode.languages.registerCompletionItemProvider({
 		language: 'dsm',
