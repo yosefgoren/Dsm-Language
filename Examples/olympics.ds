@@ -1,0 +1,16 @@
+curve circle():
+    (cos(2*pi*t), sin(2*pi*t))
+
+let Pos = [
+    (-2, 0),
+    (-1, 1),
+    (0, 0),
+    (1, 1),
+    (2, 0),
+]
+
+curve circles(ls):
+    for i in ls.length:
+        circle(t) + ls[i]
+
+show circles(t, Pos)*0.5
