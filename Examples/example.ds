@@ -31,9 +31,9 @@ curve circleZ(r, z):
 
 let R1=3
 let R2=1
-let N1=10 [2:10:1] speed 1.5 wait
+let N1=10
 let N2=10
-let Q=0 [] speed 1
+let Q in 0, 1 speed 0.5
 
 curve flats(n):
 	for i in n:
@@ -50,6 +50,9 @@ curve stands(n):
 	for i in n:
 		rotxy([R1+cosn(t)*R2, 0, sinn(t)*R2], i/n)
 
+curve torous():
+	staticProj(flats(t, N1), [p*Q, 0.7*pi/4, 0])
+	~
+	staticProj(stands(t, N2), [p*Q, 0.7*pi/4, 0])
 
-show staticProj(flats(t, N1), [p*Q, 0.7*pi/4, 0])
-show staticProj(stands(t, N2), [p*Q, 0.7*pi/4, 0])
+show torous(t) in 0, Q
