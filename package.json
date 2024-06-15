@@ -64,7 +64,7 @@
   "name": "dsm-language",
   "publisher": "octopus-writer",
   "repository": {
-    "url": "https://github.com/yosefgoren/Desmos-Calculator-Window.git"
+    "url": "https://github.com/yosefgoren/Dsm-Language"
   },
   "scripts": {
     "compile": "tsc -p ./",
@@ -74,5 +74,5 @@
     "vscode:prepublish": "npm run compile",
     "watch": "tsc -watch -p ./"
   },
-  "version": "0.5.1"
+  "version": "0.5.2"
 }
