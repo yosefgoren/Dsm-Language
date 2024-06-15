@@ -50,14 +50,14 @@ class ClientWebview {
             },
             "graph": {
                 "polarNumbers": false,
-                "showGrid": false,
+                "showGrid": true,
                 "showXAxis": false,
                 "showYAxis": false,
                 "viewport": {
-                    "xmax": 10,
-                    "xmin": -10,
-                    "ymax": 6.410928257925068,
-                    "ymin": -6.410928257925068
+                    "xmax": 3,
+                    "xmin": -3,
+                    "ymax": 3,
+                    "ymin": -3
                 },
                 "xAxisMinorSubdivisions": 1,
                 "xAxisNumbers": false,
@@ -70,16 +70,29 @@ class ClientWebview {
     }
 
     compileToJson(documentText){
-        let compiled = this.comp.api.compileDasm(documentText);
-        if(compiled[0] == '!') {
+        let raw_output = this.comp.api.compileDasm(documentText);
+        if(raw_output[0] == '!') {
             vscode.postMessage({
                 type: "error",
-                content: compiled.substr(1)
+                content: raw_output.substr(1)
             });
             return null;
         }
-        let explist = JSON.parse(compiled);
-        return ClientWebview.createGraphStateFromExpressions(explist);
+        try {
+            var output = JSON.parse(raw_output)
+        } catch (err) {
+            vscode.postMessage({
+                type: "error",
+                content: `Internal Error: Compiler output is not in a valid json format.\n\t${err}` 
+            });
+            console.debug("compiled output json was: ", raw_output);
+            throw err;
+        }
+        vscode.postMessage({
+            type: "intellisense",
+            content: output["intellisense"]
+        });
+        return ClientWebview.createGraphStateFromExpressions(output["instructions"]);
     }
 }
 
